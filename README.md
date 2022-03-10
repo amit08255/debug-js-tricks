@@ -70,7 +70,7 @@ Below code log all function calls with function name. This code can be simply co
           var N = fn.name
           var S = F && ((N && ['', N]) || fn.toString().match(/function ([^\(]+)/))
           const name = (!F && 'not a function') || (S && S[1] || 'anonymous');
-          console.log(name, arguments); // Here you can do whatever actions you want
+          console.log(name, arguments, this); // Here you can do whatever actions you want
           return call.apply(this, arguments);
     };
 }());
