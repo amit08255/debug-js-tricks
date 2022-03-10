@@ -76,3 +76,29 @@ Below code log all function calls with function name. This code can be simply co
 }());
 ```
 
+## Ignore function in blacklist and log function calls with function name
+
+Below code log all function calls with function name using global whitelist and blacklist. Adding `*` in blacklist will block all except those in whitelist. This code can be simply copied and pasted in browser console to intercept function calls.
+
+```js
+(function() {
+    window.functionBlackList = { hasOwnProperty: true };
+    window.functionWhiteList = {};
+    var call = Function.prototype.call;
+    Function.prototype.call = function() {
+          fn = Object(this)
+          var F = typeof fn == 'function'
+          var N = fn.name
+          var S = F && ((N && ['', N]) || fn.toString().match(/function ([^\(]+)/))
+          const name = (!F && 'not a function') || (S && S[1] || 'anonymous');
+          
+          if (window.functionBlackList['*'] && window.functionWhiteList[name]) {
+            console.log(name, arguments, this); // Here you can do whatever actions you want
+          } else if (!window.functionBlackList[name]) {
+            console.log(name, arguments, this); // Here you can do whatever actions you want
+          }
+
+          return call.apply(this, arguments);
+    };
+}());
+```
