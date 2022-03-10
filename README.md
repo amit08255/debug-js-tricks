@@ -57,3 +57,22 @@ function traceObject(constructor) {
 }
 ```
 
+## Log function calls with function name
+
+Below code log all function calls with function name. This code can be simply copied and pasted in browser console to intercept function calls.
+
+```js
+(function() {
+    var call = Function.prototype.call;
+    Function.prototype.call = function() {
+          fn = Object(this)
+          var F = typeof fn == 'function'
+          var N = fn.name
+          var S = F && ((N && ['', N]) || fn.toString().match(/function ([^\(]+)/))
+          const name = (!F && 'not a function') || (S && S[1] || 'anonymous');
+          console.log(name, arguments); // Here you can do whatever actions you want
+          return call.apply(this, arguments);
+    };
+}());
+```
+
