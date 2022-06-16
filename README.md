@@ -102,3 +102,43 @@ Below code log all function calls with function name using global whitelist and 
     };
 }());
 ```
+
+## Log HTTP requests
+
+For faster debugging just paste the code in your browser console and it will start logging every HTTP call.
+
+```js
+(function(XHR) {
+    "use strict";
+    var open = XHR.prototype.open;
+    var send = XHR.prototype.send;
+    
+    XHR.prototype.open = function(method, url, async, user, pass) {
+        this._url = url;
+        console.log('Opening request: ', method, url, this);
+        open.call(this, method, url, async, user, pass);
+    };
+    
+    XHR.prototype.send = function(data) {
+        var self = this;
+        var oldOnReadyStateChange;
+        var url = this._url;
+        
+        function onReadyStateChange() {
+            // log request when finished
+            if (self.readyState === 4) {
+                console.log(url, this._url, this.response);
+            }
+
+            if(oldOnReadyStateChange) {
+                oldOnReadyStateChange();
+            }
+        }
+        
+        oldOnReadyStateChange = this.onreadystatechange; 
+        this.onreadystatechange = onReadyStateChange;
+        
+        send.call(this, data);
+    }
+})(XMLHttpRequest);
+```
