@@ -142,3 +142,76 @@ For faster debugging just paste the code in your browser console and it will sta
     }
 })(XMLHttpRequest);
 ```
+
+# Log HTTP requests with log downloads
+
+For faster debugging just paste the code in your browser console and it will start logging every HTTP call.
+Call `window.exportLogsFile();` function in console to download logs file.
+
+```js
+function downloadJSON(objArr) {
+    //Convert JSON Array to string.
+    let json = JSON.stringify(objArr, null, 4);
+    //Convert JSON string to BLOB.
+    json = [json];
+    let blob1 = new Blob(json, { type: "text/plain;charset=utf-8" });
+
+    //Check the Browser.
+    let isIE = false || !!document.documentMode;
+    if (isIE) {
+        window.navigator.msSaveBlob(blob1, "logs.txt");
+    } else {
+        let url = window.URL || window.webkitURL;
+        let link = url.createObjectURL(blob1);
+        let a = document.createElement("a");
+        a.download = "logs.txt";
+        a.href = link;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+}
+
+(function(XHR) {
+    "use strict";
+    const logs = [];
+    var open = XHR.prototype.open;
+    var send = XHR.prototype.send;
+
+    window.exportLogsFile = function(){
+        downloadJSON(logs);
+    }
+    
+    XHR.prototype.open = function(method, url, async, user, pass) {
+        this._url = url;
+        console.log('Opening request: ', method, url, this);
+        open.call(this, method, url, async, user, pass);
+    };
+    
+    XHR.prototype.send = function(data) {
+        var self = this;
+        var oldOnReadyStateChange;
+        var url = this._url;
+        
+        function onReadyStateChange() {
+            // log request when finished
+            if (self.readyState === 4) {
+                logs.push({
+                    url: this._url,
+                    response: this.response,
+                    status: this.status,
+                })
+            }
+
+            if(oldOnReadyStateChange) {
+                oldOnReadyStateChange();
+            }
+        }
+        
+        oldOnReadyStateChange = this.onreadystatechange; 
+        this.onreadystatechange = onReadyStateChange;
+        
+        send.call(this, data);
+    }
+})(XMLHttpRequest);
+```
