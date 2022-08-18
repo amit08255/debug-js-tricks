@@ -53,6 +53,25 @@ A better solution for this is:
   }
 ```
 
+## Get current stack trace as array string
+
+```js
+function getStackTrace () {
+
+  var stack;
+
+  try {
+    throw new Error('');
+  }
+  catch (error) {
+    stack = error.stack || '';
+  }
+
+  stack = stack.split('\n').map(function (line) { return line.trim(); });
+  return stack.splice(stack[0] == 'Error' ? 2 : 1);
+}
+```
+
 ## Simple code to log every JavaScript function calls
 
 Below code will simple log every JavaScript function call whenever a function is being executed. For faster debugging just paste the code in your browser console and it will start logging every function call.
