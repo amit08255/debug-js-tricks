@@ -207,6 +207,33 @@ Below code log all function calls with function name using global whitelist and 
 }());
 ```
 
+## Intercept all addEventListener for debugging
+
+```js
+(function() {
+    Error.stackTraceLimit = Infinity;
+    
+    var _interfaces = Object.getOwnPropertyNames(window).filter(function(i) {
+      return /^HTML/.test(i);
+    }).map(function(i) {
+      return window[i];
+    });
+
+    // var _interfaces = [ HTMLDivElement, HTMLImageElement, HTMLUListElement, HTMLElement, HTMLDocument ];
+    for (var i = 0; i < _interfaces.length; i++) {
+      (function(original) {
+        _interfaces[i].prototype.addEventListener = function(type, listener, useCapture) {
+          console.log('addEventListener ' + type, listener, useCapture);
+          console.trace();
+          console.log('--------');
+
+          return original.apply(this, arguments);
+        }
+      })(_interfaces[i].prototype.addEventListener);
+    }
+})();
+```
+
 ## Log HTTP requests
 
 For faster debugging just paste the code in your browser console and it will start logging every HTTP call.
