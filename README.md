@@ -179,6 +179,34 @@ Below code log all function calls with function name using global whitelist and 
 }());
 ```
 
+**v2 of code to ignore functions with name starting with underscore:**
+
+```js
+(function () {
+    const { call } = Function.prototype;
+    Function.prototype.call = function () {
+        let fn = Object(this);
+        try {
+            void new Function(fn.toString());
+        } catch (e) {
+            return call.apply(this, arguments);
+        }
+
+        const F = typeof fn === 'function';
+        const N = fn.name;
+        const S = F && ((N && ['', N]) || fn.toString().match(/function ([^\(]+)/));
+        const name = (!F && 'not a function') || (S && S[1] || 'anonymous');
+
+        // Do not log function calls whose name start with underscore
+        if (name[0] !== '_') {
+            console.log("\n", name, arguments); // Here you can do whatever actions you want
+        }
+
+        return call.apply(this, arguments);
+    };
+}());
+```
+
 ## Log HTTP requests
 
 For faster debugging just paste the code in your browser console and it will start logging every HTTP call.
