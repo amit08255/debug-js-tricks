@@ -1,5 +1,20 @@
 # JavaScript Debug Tricks
 
+## Detect if a function is native JavaScript function
+
+Detects if function is native to JavaScript and not defined by user or external library.
+
+```js
+function isNativeFn(fn) {
+    try {
+        void new Function(fn.toString());    
+    } catch (e) {
+        return true;
+    }
+    return false;
+}
+```
+
 ## Simple code to log every JavaScript function calls
 
 Below code will simple log every JavaScript function call whenever a function is being executed. For faster debugging just paste the code in your browser console and it will start logging every function call.
