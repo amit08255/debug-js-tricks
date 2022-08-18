@@ -118,7 +118,7 @@ Below code log all function calls with function name. This code can be simply co
 (function() {
     var call = Function.prototype.call;
     Function.prototype.call = function() {
-          fn = Object(this)
+          var fn = Object(this)
           var F = typeof fn == 'function'
           var N = fn.name
           var S = F && ((N && ['', N]) || fn.toString().match(/function ([^\(]+)/))
