@@ -72,6 +72,24 @@ function getStackTrace () {
 }
 ```
 
+**V2 to ignore stack trace from node_modules:**
+
+```js
+function getStackTrace() {
+    let stack;
+
+    try {
+        throw new Error('');
+    } catch (error) {
+        stack = error.stack || '';
+    }
+
+    stack = stack.split('\n').map((line) => line.trim());
+    stack = stack.splice(stack[0] === 'Error' ? 2 : 1);
+    return stack.filter((x) => (/\/node_modules\//.test(x) !== true));
+}
+```
+
 ## Simple code to log every JavaScript function calls
 
 Below code will simple log every JavaScript function call whenever a function is being executed. For faster debugging just paste the code in your browser console and it will start logging every function call.
