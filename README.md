@@ -314,6 +314,47 @@ React.useEffect = reactInterceptor('useEffect', React.useEffect);
 React.useState = reactInterceptor('useState', React.useState);
 ```
 
+**Version 2 to log arguments and filter with stack trace of length 1 i.e. not execution track from app
+
+```js
+function getStackTrace() {
+    let stack;
+
+    try {
+        throw new Error('');
+    } catch (error) {
+        stack = error.stack || '';
+    }
+
+    stack = stack.split('\n').map((line) => line.trim());
+    stack = stack.splice(stack[0] === 'Error' ? 2 : 1);
+    return stack.filter((x) => (/\/node_modules\//.test(x) !== true));
+}
+
+const reactInterceptor = (name, originalFunction) => {
+    let lastMessage = null;
+
+    return (...args) => {
+        const trace = getStackTrace();
+        const msg = trace.join('\n');
+
+        if (lastMessage !== msg && trace.length > 1) {
+            console.log(`React.${name} called`);
+            console.log(args);
+            console.log('- - - - - -');
+            console.log(msg);
+            console.log('===============');
+            lastMessage = msg;
+        }
+
+        return originalFunction(...args);
+    };
+};
+
+React.useEffect = reactInterceptor('useEffect', React.useEffect);
+React.useState = reactInterceptor('useState', React.useState);
+```
+
 ## Log HTTP requests
 
 For faster debugging just paste the code in your browser console and it will start logging every HTTP call.
