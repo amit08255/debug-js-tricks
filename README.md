@@ -271,6 +271,49 @@ Below code log all function calls with function name using global whitelist and 
 })();
 ```
 
+## Log ReactJS function component hooks execution stack trace
+
+Add below code at top of file just after all imports are added.
+
+```js
+import React from 'react';
+
+function getStackTrace() {
+    let stack;
+
+    try {
+        throw new Error('');
+    } catch (error) {
+        stack = error.stack || '';
+    }
+
+    stack = stack.split('\n').map((line) => line.trim());
+    stack = stack.splice(stack[0] === 'Error' ? 2 : 1);
+    return stack.filter((x) => (/\/node_modules\//.test(x) !== true));
+}
+
+const reactInterceptor = (name, originalFunction) => {
+    let lastMessage = null;
+
+    return (...args) => {
+        const trace = getStackTrace();
+        const msg = trace.join('\n');
+
+        if (lastMessage !== msg) {
+            console.log(`React.${name} called`);
+            console.log(msg);
+            console.log('===============');
+            lastMessage = msg;
+        }
+
+        return originalFunction(...args);
+    };
+};
+
+React.useEffect = reactInterceptor('useEffect', React.useEffect);
+React.useState = reactInterceptor('useState', React.useState);
+```
+
 ## Log HTTP requests
 
 For faster debugging just paste the code in your browser console and it will start logging every HTTP call.
