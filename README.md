@@ -314,7 +314,7 @@ React.useEffect = reactInterceptor('useEffect', React.useEffect);
 React.useState = reactInterceptor('useState', React.useState);
 ```
 
-**Version 2 to log arguments and filter with stack trace of length 1 i.e. not execution track from app
+**Version 2 to log arguments and filter with stack trace of length 1 i.e. not execution track from app:**
 
 ```js
 function getStackTrace() {
