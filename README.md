@@ -410,6 +410,88 @@ React.useEffect = reactInterceptor('useEffect', React.useEffect);
 React.useState = reactInterceptor('useState', React.useState);
 ```
 
+**Version 4 React interceptor with events intercepting:**
+
+The event interceptor has optional third parameter whose value is name events to intercept. By default it has `*` added which means intercept every event occurred:
+
+```js
+import React from 'react';
+
+function getStackTrace() {
+    let stack;
+
+    try {
+        throw new Error('');
+    } catch (error) {
+        stack = error.stack || '';
+    }
+
+    stack = stack.split('\n').map((line) => line.trim());
+    stack = stack.splice(stack[0] === 'Error' ? 2 : 1);
+
+    const result = [];
+
+    stack.map((x, index) => {
+        if (index > 0 && /\/node_modules\//.test(x) !== true) {
+            result.push(x);
+        }
+        return null;
+    });
+
+    return result;
+}
+
+const reactInterceptor = (name, originalFunction) => {
+    let lastMessage = null;
+
+    return (...args) => {
+        const trace = getStackTrace();
+        const msg = trace.join('\n');
+
+        if (lastMessage !== msg && trace.length > 1) {
+            console.log(`React.${name} called`);
+            console.log(args);
+            console.log('- - - - - -');
+            console.log(msg);
+            console.log('===============');
+            lastMessage = msg;
+        }
+
+        return originalFunction(...args);
+    };
+};
+
+const eventInterceptor = (name, originalFunction) => (...args) => {
+    const trace = getStackTrace();
+    const msg = trace.join('\n');
+    console.log(`event ${name} called`);
+    console.log(args);
+    console.log('- - - - - -');
+    console.log(msg);
+    console.log('===============');
+
+    return originalFunction(...args);
+};
+
+const reactCreateElementInterceptor = (name, originalFunction, events = { '*': true }) => (...args) => {
+    if (args.length >= 2 && typeof args[0] === 'string') {
+        if (args[1] !== undefined && args[1] !== null && typeof args[1] === 'object') {
+            Object.keys(args[1]).forEach((key) => {
+                if ((events['*'] || events[key]) && key.startsWith('on') && typeof args[1][key] === 'function') {
+                    args[1][key] = eventInterceptor(`${args[0]}.${key}`, args[1][key]);
+                }
+            });
+        }
+    }
+
+    return originalFunction(...args);
+};
+
+React.useEffect = reactInterceptor('useEffect', React.useEffect);
+React.useState = reactInterceptor('useState', React.useState);
+React.createElement = reactCreateElementInterceptor('createElement', React.createElement, { onClick: true });
+```
+
 ## Log HTTP requests
 
 For faster debugging just paste the code in your browser console and it will start logging every HTTP call.
