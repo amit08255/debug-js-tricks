@@ -16,7 +16,7 @@ function isFetchResponse(value) {
 
 (function() {
     setInterval(() => {
-        const isFetchNative = window.Promise.toString().indexOf('native code') !== -1;
+        const isFetchNative = window.Promise.prototype.then.toString().indexOf('native code') !== -1;
 
         if (!isFetchNative) {
             return;
