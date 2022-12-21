@@ -27,7 +27,7 @@ function isFetchResponse(value) {
             Promise.prototype.then = function(onFulfilled, onFailure) {
                return originalThen.call(this, function(value) {
 
-                 if (isFetchResponse(value)) {
+                 if (isFetchResponse(value) && !value.isAlreadyRead) {
                     const contentType = value.headers.get("content-type");
 
                     const response = value.clone();
@@ -43,6 +43,8 @@ function isFetchResponse(value) {
                             console.log(text);
                         });
                       }
+                    
+                    value.isAlreadyRead = true;
                  }
 
                  if (onFulfilled) {
