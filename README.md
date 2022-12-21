@@ -1,5 +1,23 @@
 # JavaScript Debug Tricks
 
+## Intercep fetch request using proxy object
+
+```js
+window.fetch = new Proxy(window.fetch, {
+    apply(fetch, that, args) {
+        // Forward function call to the original fetch
+        const result = fetch.apply(that, args);
+
+        // Do whatever you want with the resulting Promise
+        result.then((response) => {
+            console.log("fetch completed!", args, response);
+        });
+
+        return result;
+    }
+});
+```
+
 ## Detect fetch request in browser even when its patched by website
 
 ```js
