@@ -1,6 +1,41 @@
 # JavaScript Debug Tricks
 
-## Intercep fetch request using proxy object
+## Intercept promise resolvers
+
+This can be used to track fetch requests even in those cases when original fetch is monkey patched. To track fetch request, the properties of the value can be matched as fetch when exists: `url`, `status`, `body`, `ok`, `headers`.
+
+```js
+(function(Promise) {
+   var originalThen = Promise.prototype.then;
+   Promise.prototype.then = function(onFulfilled, onFailure) {
+      return originalThen.call(this, function(value) {
+        console.log(value);
+        return onFulfilled(value);
+      }, onFailure);
+   };
+})(this.Promise);
+```
+
+## Intercept promise using subclass monkey patching
+
+```js
+const global = window; // (in browser...)
+
+
+const OldPromise = global.Promise; 
+global.Promise = class Promise extends OldPromise {
+  constructor(executor) {
+    // do whatever you want here, but must call super()
+    console.log('hello, promise');
+
+    super(executor); // call native Promise constructor
+  }
+};
+
+Promise.resolve(); // prints: "hello, promise"
+```
+
+## Intercept fetch request using proxy object
 
 ```js
 window.fetch = new Proxy(window.fetch, {
