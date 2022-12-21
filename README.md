@@ -1,5 +1,21 @@
 # JavaScript Debug Tricks
 
+## Detect fetch request in browser even when its patched by website
+
+```js
+const observer = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    if (entry.initiatorType === "fetch") {
+      console.log('Fetch request detected to', entry.name);
+    }
+  }
+});
+
+observer.observe({
+  entryTypes: ["resource"]
+});
+```
+
 ## Get intercepted version of function
 
 ```js
