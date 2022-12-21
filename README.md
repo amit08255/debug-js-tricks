@@ -1,5 +1,60 @@
 # JavaScript Debug Tricks
 
+## Intercept fetch by promise intercepting
+
+It patches the original Promise every 2 seconds which allows you to continue intercepting even if route change occurs.
+
+```js
+function isFetchResponse(value) {
+    if (value && value.url && value.body !== undefined && value.headers && value.status && value.statusText !== undefined) {
+        return true;
+    }
+
+    return false;
+}
+
+
+(function() {
+    setInterval(() => {
+        const isFetchNative = window.Promise.toString().indexOf('native code') !== -1;
+
+        if (!isFetchNative) {
+            return;
+        }
+
+        (function(Promise) {
+            var originalThen = Promise.prototype.then;
+            Promise.prototype.then = function(onFulfilled, onFailure) {
+               return originalThen.call(this, function(value) {
+
+                 if (isFetchResponse(value)) {
+                    const contentType = value.headers.get("content-type");
+
+                    const response = value.clone();
+
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        response.json().then(data => {
+                          console.log("Response: ", value.url, value.status);
+                          console.log(data);
+                        });
+                      } else {
+                        response.text().then(text => {
+                            console.log("Response: ", value.url, value.status);
+                            console.log(text);
+                        });
+                      }
+                 }
+
+                 if (onFulfilled) {
+                    return onFulfilled(value);
+                 }
+               }, onFailure);
+            };
+         })(window.Promise);
+    }, 2000);
+})();
+```
+
 ## Intercept promise resolvers
 
 This can be used to track fetch requests even in those cases when original fetch is monkey patched. To track fetch request, the properties of the value can be matched as fetch when exists: `url`, `status`, `body`, `ok`, `headers`.
