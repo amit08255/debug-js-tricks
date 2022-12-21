@@ -1,5 +1,16 @@
 # JavaScript Debug Tricks
 
+## Get intercepted version of function
+
+```js
+function intercept(f, cb) {
+  return function() {
+    cb(arguments);
+    f.apply(f, Array.prototype.slice.call(arguments, 0));
+  };
+}
+```
+
 ## Detect if a function is native JavaScript function
 
 Detects if function is native to JavaScript and not defined by user or external library.
